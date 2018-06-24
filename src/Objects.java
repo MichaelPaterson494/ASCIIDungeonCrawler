@@ -1,7 +1,13 @@
 public enum Objects {
-    WALL('/');
+    WALL('#');
+
+    char object;
 
     private Objects(char object){
+        this.object = object;
+    }
 
+    public char getObject(){
+        return this.object;
     }
 }
