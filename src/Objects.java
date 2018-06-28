@@ -1,13 +1,13 @@
 public enum Objects {
-    WALL('#');
+    WALL("#"), FLOOR(" ");
 
-    char object;
+    String object;
 
-    private Objects(char object){
+    private Objects(String object){
         this.object = object;
     }
 
-    public char getObject(){
+    public String getObject(){
         return this.object;
     }
 }

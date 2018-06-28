@@ -1,17 +1,26 @@
 public enum Entities {
     //Monsters
-    GOBLIN('G'),
+    GOBLIN("\033[0;32mG\033[0m"), BAT("\033[0;31mB\033[0m"),
 
     //Characters
-    PLAYER('@');
+    PLAYER("@");
 
-    char entity;
+    String entity;
 
-    private Entities(char entity){
+    private Entities(String entity){
         this.entity = entity;
     }
 
-    public char getEntity(){
+    public String getEntity(){
         return this.entity;
+    }
+
+    public String toString(){
+        switch(this){
+            case BAT: return "Bat";
+            case PLAYER: return "Hero";
+            case GOBLIN: return "Goblin";
+            default: return "Unknown";
+        }
     }
 }
