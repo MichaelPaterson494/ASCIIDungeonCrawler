@@ -3,6 +3,7 @@ public class Entity {
     Entities type;
     int x, y;
     int health;
+    int maxHealth;
     int attack;
     int detection; // Radius in which the entity can see others.
 
@@ -13,6 +14,7 @@ public class Entity {
         this.health = health;
         this.attack = attack;
         this.detection = detection;
+        this.maxHealth = health;
 
     }
     public Entities getType(){
@@ -25,13 +27,30 @@ public class Entity {
 
     public String getHealthString() {
         StringBuilder str = new StringBuilder();
-        for (int i = 0; i < health; i++) {
-            if (getType() == Entities.PLAYER) {
-                str.append("\u001B[32m=\u001B[0m");
-            } else {
-                str.append("\u001B[31m=\u001B[0m");
-            }
+
+        // Print color code.
+        if (getType() == Entities.PLAYER) {
+            str.append("\u001B[32m"); // Green
         }
+        else {
+            str.append("\u001B[33m"); // Yellow
+        }
+
+        // Print health bar.
+        for (int i = 0; i < maxHealth; i++) {
+            if (i == health) {
+                // We reached the 'health' so the remaining equals signs should be red.
+                str.append("\u001B[0m|\u001B[31m");
+            }
+            str.append("=");
+        }
+
+        str.append("\u001B[0m");
+
+        if (health == maxHealth) {
+            str.append('|');
+        }
+
         return str.toString();
     }
 }
