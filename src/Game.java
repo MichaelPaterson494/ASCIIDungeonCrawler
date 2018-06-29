@@ -282,11 +282,10 @@ public class Game {
 
         if (command.equals("help")) {
             System.out.println("Available commands: \nmove [up, down, left," +
-                    " right]\nattack [up, down, left, right]\nuse [item]");
+                    " right]\nattack [up, down, left, right]\nuse [item]\nkms\nwait");
         } else if (command.equals("move up")) {
             move(player, 'w');
         } else if (command.equals("move down")) {
-            System.out.print("\nYou move down!\n");
             move(player, 's');
         } else if (command.equals("move left")) {
             move(player, 'a');
@@ -302,9 +301,17 @@ public class Game {
             attack(player, 'a');
         } else if (command.equals("use")) {
             //todo: create use function.
-            System.out.print("\nYou use an item.\n");
+            System.out.print("You use an item.\n");
+        } else if (command.equals("kms")){
+            System.out.print("You slit your wrists and bleed to death on the floor\nGame Over.\n");
+            player.health = -1337;
+            isRunning = false;
+        } else if (command.equals(".")){
+            //todo: Add repeat function.
+        } else if(command.equals("wait")){
+            System.out.print("You stand around like the lazy sack of shit you are.");
         } else {
-            System.out.print("\nPlease use a valid command. type 'help' for help with commands.\n");
+            System.out.print("Please use a valid command. type 'help' for help with commands.\n");
             command();
         }
     }
