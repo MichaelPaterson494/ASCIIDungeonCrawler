@@ -7,6 +7,8 @@ public class Game {
     Objects[][] objects = new Objects[17][17];
     ArrayList<Entity> entities = new ArrayList<>();
 
+    boolean isRunning = true;
+
     public Game() {
         for (int i = 0; i < objects.length; i++) {
             Arrays.fill(objects[i], Objects.FLOOR);
@@ -42,11 +44,10 @@ public class Game {
         entities.add(new Entity(Entities.BAT, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 4, 2, 4));
         entities.add(new Entity(Entities.BAT, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 4, 2, 4));
         entities.add(new Entity(Entities.DRAGON, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 30, 5, 3));
-
     }
 
     public void run() {
-        while (true) {
+        while (isRunning) {
             report();
             draw();
             command();
@@ -160,7 +161,7 @@ public class Game {
                 System.out.format("The %s died.\n", enemy.getType().toString());
                 if (enemy.getType() == Entities.PLAYER) {
                     System.out.print("Game Over\n");
-                    //todo: add close game function.
+                    isRunning = false;
                 }
                 entities.remove(enemy);
             }
