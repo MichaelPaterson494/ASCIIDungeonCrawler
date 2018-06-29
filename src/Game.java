@@ -46,43 +46,63 @@ public class Game {
 
     public void run() {
         draw();
-        command();
         while (true) {
-
+            command();
+            draw();
         }
     }
 
-    private void moveEntities(){
+    private void processEntities(){
         for (Entity entity : entities){
             if(entity.getType() != Entities.PLAYER) {
-                Entity seenTarget = tryDetect(entity, Entities.PLAYER);
-                int moveChance = (int) (Math.random() * 99);
-                if (moveChance > 31) {
-                    if (seenTarget == null) {
-                        int move = (int) (Math.random() * 3);
-                        if (move == 0) {
-                            move(entity, 'w');
-                        } else if (move == 1) {
-                            move(entity, 'a');
-                        } else if (move == 2) {
-                            move(entity, 's');
-                        } else if (move == 3) {
-                            move(entity, 'd');
-                        }
+                Entity attackTarget = tryDetectAttackable(entity, Entities.PLAYER);
+                if (attackTarget != null) {
+                    int diffX = attackTarget.x - entity.x;
+                    if (diffX == -1) {
+                        attack(entity, 'a');
                     }
-                    else {
-                        int dirX = seenTarget.x - entity.x;
-                        int dirY = seenTarget.y - entity.y;
+                    if (diffX == 1) {
+                        attack(entity, 'd');
+                    }
 
-                        char direction;
-                        if (Math.abs(dirX) > Math.abs(dirY)) {
-                            direction = dirX < 0 ? 'a' : 'd';
+                    int diffY = attackTarget.y - entity.y;
+                    if (diffY == 1) {
+                        attack(entity, 's');
+                    }
+                    if (diffY == -1) {
+                        attack(entity, 'w');
+                    }
+                }
+                else {
+                    Entity chaseTarget = tryDetect(entity, Entities.PLAYER);
+                    int moveChance = (int) (Math.random() * 99);
+                    if (moveChance > 31) {
+                        if (chaseTarget == null) {
+                            int move = (int) (Math.random() * 3);
+                            if (move == 0) {
+                                move(entity, 'w');
+                            } else if (move == 1) {
+                                move(entity, 'a');
+                            } else if (move == 2) {
+                                move(entity, 's');
+                            } else if (move == 3) {
+                                move(entity, 'd');
+                            }
                         }
                         else {
-                            direction = dirY < 0 ? 'w' : 's';
-                        }
-                        move(entity, direction);
+                            int dirX = chaseTarget.x - entity.x;
+                            int dirY = chaseTarget.y - entity.y;
 
+                            char direction;
+                            if (Math.abs(dirX) > Math.abs(dirY)) {
+                                direction = dirX < 0 ? 'a' : 'd';
+                            }
+                            else {
+                                direction = dirY < 0 ? 'w' : 's';
+                            }
+                            move(entity, direction);
+
+                        }
                     }
                 }
             }
@@ -92,6 +112,15 @@ public class Game {
     private Entity getEntity(int x, int y) {
         for (Entity e : entities) {
             if (e.x == x && e.y == y) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    private Entity getEntity(Entities type) {
+        for (Entity e : entities) {
+            if (e.getType() == type) {
                 return e;
             }
         }
@@ -108,7 +137,7 @@ public class Game {
     }
 
     public void draw() {
-        moveEntities();
+        processEntities();
         for (int y = 0; y < objects.length; y++) {
             for (int x = 0; x < objects[y].length; x++) {
                 Entity entity = getEntity(x, y);
@@ -121,10 +150,9 @@ public class Game {
             }
             System.out.println();
         }
-        command();
     }
 
-    private void getHealth(Entity entity) {
+    private void printHealth(Entity entity) {
         for (int i = 0; i < entity.health; i++) {
             if (entity.getType() == Entities.PLAYER) {
                 System.out.print("\u001B[32m=\u001B[0m");
@@ -149,21 +177,22 @@ public class Game {
                     return;
                 }
             }
+
             System.out.print("\nYour health: \n");
             System.out.print("{");
 
             if (enemy.getType() == Entities.PLAYER) {
-                getHealth(enemy);
+                printHealth(enemy);
             } else {
-                getHealth(attacker);
+                printHealth(attacker);
             }
             System.out.print("}\n");
             System.out.format("\n%s's health\n", enemy.getType().toString());
             System.out.print("{");
             if (attacker.getType() == Entities.PLAYER) {
-                getHealth(enemy);
+                printHealth(enemy);
             } else {
-                getHealth(attacker);
+                printHealth(attacker);
             }
             System.out.print("}\n");
         } else {
@@ -171,31 +200,17 @@ public class Game {
         }
     }
 
-    public void attack(Entities attacker, char direction) {
-        for (int i = 0; i < entities.size(); i++) {
-            Entity e = entities.get(i);
-            if (e.getType() == attacker) {
-                if (direction == 'w') {
-                    tryAttack(e, 0, -1);
-                } else if (direction == 's') {
-                    tryAttack(e, 0, 1);
-                } else if (direction == 'a') {
-                    tryAttack(e, -1, 0);
-                } else if (direction == 'd') {
-                    tryAttack(e, 1, 0);
-                }
-            }
+    public void attack(Entity e, char direction) {
+        if (direction == 'w') {
+            tryAttack(e, 0, -1);
+        } else if (direction == 's') {
+            tryAttack(e, 0, 1);
+        } else if (direction == 'a') {
+            tryAttack(e, -1, 0);
+        } else if (direction == 'd') {
+            tryAttack(e, 1, 0);
         }
     }
-
-    public void moveAll(Entities entity, char direction) {
-        for (Entity e : entities) {
-            if (e.getType() == entity) {
-                move(e, direction);
-            }
-        }
-    }
-
 
     public void move(Entity e, char direction) {
         int newX = e.x;
@@ -227,6 +242,26 @@ public class Game {
         }
     }
 
+    public Entity tryDetectAttackable(Entity entity, Entities targetType) {
+        Entity up = getEntity(entity.x, entity.y - 1);
+        if (up != null && up.type == targetType) {
+            return up;
+        }
+        Entity down = getEntity(entity.x, entity.y + 1);
+        if (down != null && down.type == targetType) {
+            return down;
+        }
+        Entity left = getEntity(entity.x - 1, entity.y);
+        if (left != null && left.type == targetType) {
+            return left;
+        }
+        Entity right = getEntity(entity.x + 1, entity.y);
+        if (right != null && right.type == targetType) {
+            return right;
+        }
+        return null;
+    }
+
     public Entity tryDetect(Entity entity, Entities targetType) {
         for (Entity e : entities) {
             if (e.getType() == targetType) {
@@ -244,38 +279,31 @@ public class Game {
     }
 
     public void command() {
-        String command = null;
+        Entity player = getEntity(Entities.PLAYER);
+
         Scanner sc = new Scanner(System.in);
         System.out.print("\nWhat will you do?: ");
-        command = sc.nextLine();
+        String command = sc.nextLine();
         if (command.equals("help")) {
             System.out.println("Available commands: \nmove [up, down, left," +
                     " right]\nattack [up, down, left, right]\nuse [item]");
         } else if (command.equals("move up")) {
-            moveAll(Entities.PLAYER, 'w');
-            draw();
+            move(player, 'w');
         } else if (command.equals("move down")) {
             System.out.print("\nYou move down!\n");
-            moveAll(Entities.PLAYER, 's');
-            draw();
+            move(player, 's');
         } else if (command.equals("move left")) {
-            moveAll(Entities.PLAYER, 'a');
-            draw();
+            move(player, 'a');
         } else if (command.equals("move right")) {
-            moveAll(Entities.PLAYER, 'd');
-            draw();
+            move(player, 'd');
         } else if (command.equals("attack up")) {
-            attack(Entities.PLAYER, 'w');
-            draw();
+            attack(player, 'w');
         } else if (command.equals("attack right")) {
-            attack(Entities.PLAYER, 'd');
-            draw();
+            attack(player, 'd');
         } else if (command.equals("attack down")) {
-            attack(Entities.PLAYER, 's');
-            draw();
+            attack(player, 's');
         } else if (command.equals("attack left")) {
-            attack(Entities.PLAYER, 'a');
-            draw();
+            attack(player, 'a');
         } else if (command.equals("use")) {
             //todo: create use function.
             System.out.print("\nYou use an item.\n");
