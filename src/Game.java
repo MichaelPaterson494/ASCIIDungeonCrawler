@@ -41,19 +41,23 @@ public class Game {
         entities.add(new Entity(Entities.GOBLIN, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 10, 1, 4));
         entities.add(new Entity(Entities.BAT, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 4, 2, 4));
         entities.add(new Entity(Entities.BAT, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 4, 2, 4));
+        entities.add(new Entity(Entities.DRAGON, (int) (1 + Math.random() * 15), (int) (1 + Math.random() * 15), 30, 5, 3));
 
     }
 
     public void run() {
-        draw();
         while (true) {
-            command();
+            report();
             draw();
+            command();
+            processEntities();
         }
     }
 
     private void processEntities(){
-        for (Entity entity : entities){
+        for (int i = 0; i < entities.size(); ++i) {
+            Entity entity = entities.get(i);
+
             if(entity.getType() != Entities.PLAYER) {
                 Entity attackTarget = tryDetectAttackable(entity, Entities.PLAYER);
                 if (attackTarget != null) {
@@ -127,17 +131,7 @@ public class Game {
         return null;
     }
 
-    public boolean isDead() {
-        for (Entity entity : entities) {
-            if (entity.health <= 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void draw() {
-        processEntities();
         for (int y = 0; y < objects.length; y++) {
             for (int x = 0; x < objects[y].length; x++) {
                 Entity entity = getEntity(x, y);
@@ -152,52 +146,51 @@ public class Game {
         }
     }
 
-    private void printHealth(Entity entity) {
-        for (int i = 0; i < entity.health; i++) {
-            if (entity.getType() == Entities.PLAYER) {
-                System.out.print("\u001B[32m=\u001B[0m");
-            } else {
-                System.out.print("\u001B[31m=\u001B[0m");
-            }
-        }
-    }
-
     public void tryAttack(Entity attacker, int modx, int mody) {
         Entity enemy = getEntity(attacker.x + modx, attacker.y + mody);
         if (enemy != null) {
             enemy.health -= attacker.attack;
-            if (isDead()) {
+
+            System.out.format("%s attacked %s for %d damage.\n",
+                              attacker.getType().toString(),
+                              enemy.getType().toString(),
+                              attacker.attack);
+
+            if (enemy.isDead()) {
+                System.out.format("The %s died.\n", enemy.getType().toString());
                 if (enemy.getType() == Entities.PLAYER) {
-                    entities.remove(enemy);
-                    System.out.print("\nYou have Died. Game Over\n");
+                    System.out.print("Game Over\n");
                     //todo: add close game function.
-                } else {
-                    entities.remove(enemy);
-                    System.out.format("\nThe %s has died by your hand.\n", enemy.getType().toString());
-                    return;
                 }
+                entities.remove(enemy);
             }
-
-            System.out.print("\nYour health: \n");
-            System.out.print("{");
-
-            if (enemy.getType() == Entities.PLAYER) {
-                printHealth(enemy);
-            } else {
-                printHealth(attacker);
-            }
-            System.out.print("}\n");
-            System.out.format("\n%s's health\n", enemy.getType().toString());
-            System.out.print("{");
-            if (attacker.getType() == Entities.PLAYER) {
-                printHealth(enemy);
-            } else {
-                printHealth(attacker);
-            }
-            System.out.print("}\n");
-        } else {
-            System.out.print("\n You swing your sword at thin air...\n");
         }
+        else {
+            System.out.format("%s swung their sword at thin air...\n", attacker.getType().toString());
+        }
+    }
+
+    public void report() {
+        System.out.println("\nHealth report:");
+        Entity player = getEntity(Entities.PLAYER);
+        System.out.format("%s: {%s}\n",player.getType().toString(), player.getHealthString());
+        Entity eUp = getEntity(player.x, player.y - 1);
+        if(eUp != null){
+            System.out.format("%s (up): {%s}\n",eUp.getType().toString(), eUp.getHealthString());
+        }
+        Entity eDown = getEntity(player.x, player.y + 1);
+        if(eDown != null){
+            System.out.format("%s (down): {%s}\n",eDown.getType().toString(), eDown.getHealthString());
+        }
+        Entity eLeft = getEntity(player.x - 1, player.y);
+        if(eLeft != null){
+            System.out.format("%s (left): {%s}\n",eLeft.getType().toString(), eLeft.getHealthString());
+        }
+        Entity eRight = getEntity(player.x + 1, player.y);
+        if(eRight != null){
+            System.out.format("%s (right): {%s}\n",eRight.getType().toString(), eRight.getHealthString());
+        }
+        System.out.print('\n');
     }
 
     public void attack(Entity e, char direction) {
@@ -238,7 +231,7 @@ public class Game {
             e.y = newY;
         }
         else if(e.getType() == Entities.PLAYER) {
-            System.out.print("\nSomething blocks your path.\n");
+            System.out.print("Something blocks your path.\n");
         }
     }
 
@@ -284,6 +277,8 @@ public class Game {
         Scanner sc = new Scanner(System.in);
         System.out.print("\nWhat will you do?: ");
         String command = sc.nextLine();
+        System.out.print('\n'); // New line to push the reports down by one line.
+
         if (command.equals("help")) {
             System.out.println("Available commands: \nmove [up, down, left," +
                     " right]\nattack [up, down, left, right]\nuse [item]");

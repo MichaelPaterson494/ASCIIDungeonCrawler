@@ -18,4 +18,20 @@ public class Entity {
     public Entities getType(){
         return this.type;
     }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    public String getHealthString() {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < health; i++) {
+            if (getType() == Entities.PLAYER) {
+                str.append("\u001B[32m=\u001B[0m");
+            } else {
+                str.append("\u001B[31m=\u001B[0m");
+            }
+        }
+        return str.toString();
+    }
 }
