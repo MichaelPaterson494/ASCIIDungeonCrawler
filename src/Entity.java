@@ -1,13 +1,17 @@
-public class Entity {
+import java.util.ArrayList;
+import java.util.ListIterator;
+
+class Entity {
 
     Entities type;
     int x, y;
     int health;
     int maxHealth;
+    ArrayList<Item> inventory = new ArrayList<>();
     int attack;
     int detection; // Radius in which the entity can see others.
 
-    public Entity(Entities type, int x, int y, int health, int attack, int detection){
+    Entity(Entities type, int x, int y, int health, int attack, int detection){
         this.type = type;
         this.x = x;
         this.y = y;
@@ -15,17 +19,24 @@ public class Entity {
         this.attack = attack;
         this.detection = detection;
         this.maxHealth = health;
-
     }
-    public Entities getType(){
+    Entities getType(){
         return this.type;
     }
 
-    public boolean isDead() {
+    boolean isDead() {
         return health <= 0;
     }
 
-    public String getHealthString() {
+    void addItem(Item i) {
+        inventory.add(i);
+    }
+
+    ArrayList<Item> getItems(){
+        return inventory;
+    }
+
+    String getHealthString() {
         StringBuilder str = new StringBuilder();
 
         // Print color code.
@@ -52,5 +63,18 @@ public class Entity {
         }
 
         return str.toString();
+    }
+
+    boolean useItem(String itemName, Game game){
+        ListIterator<Item> itemIter = getItems().listIterator();
+        while(itemIter.hasNext()){
+            Item item = itemIter.next();
+            if(itemName.equals(item.getName())){
+                item.use(this, game);
+                itemIter.remove();
+                return true;
+            }
+        }
+        return false;
     }
 }

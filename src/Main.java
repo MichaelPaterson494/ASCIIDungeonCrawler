@@ -1,7 +1,8 @@
 public class Main {
     public static void main(String[] args){
-        Game gameTest = new Game();
-        gameTest.run();
-
+        Game game = new Game(1, null);
+        while (game != null) {
+            game = game.run();
+        }
     }
 }

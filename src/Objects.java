@@ -1,9 +1,9 @@
 public enum Objects {
-    WALL("#"), FLOOR(" ");
+    WALL("#"), FLOOR(" "), TRAPDOOR("▢");
 
     String object;
 
-    private Objects(String object){
+    Objects(String object){
         this.object = object;
     }
 
